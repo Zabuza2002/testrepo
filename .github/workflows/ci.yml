@@ -1,4 +1,4 @@
-name: Trivy Secret Scan
+name: Trivy Secret Scan (OpenSSL)
 
 on:
   push:
@@ -11,18 +11,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-
       - name: Install Trivy
         run: |
           sudo apt-get update
-          sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+          sudo apt-get install -y wget apt-transport-https gnupg lsb-release git
           curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo gpg --dearmor -o /usr/share/keyrings/trivy.gpg
           echo "deb [signed-by=/usr/share/keyrings/trivy.gpg] https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -cs) main" | sudo tee /etc/apt/sources.list.d/trivy.list
           sudo apt-get update
           sudo apt-get install -y trivy
 
-      - name: Scan source code for secrets
-        run: trivy fs --scanners secret --exit-code 1 .
+      - name: Clone OpenSSL source code
+        run: |
+          git clone https://github.com/openssl/openssl.git
+
+      - name: Scan OpenSSL for secrets
+        run: trivy fs --scanners secret --exit-code 1 ./openssl
 
