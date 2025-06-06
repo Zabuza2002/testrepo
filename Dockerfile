@@ -1,11 +1,10 @@
-# Используем образ с Python
-FROM python:3
+FROM python:3.10-slim
 
-# Устанавливаем рабочую директорию
 WORKDIR /app
 
-# Копируем исходный код в контейнер
-COPY calc.py /app/calc.py
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Запускаем приложение при старте контейнера
-CMD ["python", "/app/calc.py"]
+COPY . .
+
+CMD ["python", "main.py"]
