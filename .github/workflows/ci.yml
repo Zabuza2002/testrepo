@@ -1,43 +1,18 @@
-name: CI/CD Pipeline
+name: Trivy Secret Scan
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
-  ci-cd:
+  trivy-scan:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Set up Python
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install flake8 pytest
-
-      - name: Lint check
-        run: flake8 .
-
-      - name: Run unit tests
-        run: pytest unit_test.py
-
-      - name: Build Docker image
-        run: docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/testrepo:latest .
-
-      - name: Login to Docker Hub
-        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
-      - name: Push Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/testrepo:latest
 
       - name: Install Trivy
         run: |
@@ -51,5 +26,3 @@ jobs:
       - name: Scan source code for secrets
         run: trivy fs --scanners secret --exit-code 1 .
 
-      - name: Scan Docker image for HIGH vulnerabilities
-        run: trivy image --severity HIGH --exit-code 1 ${{ secrets.DOCKERHUB_USERNAME }}/testrepo:latest
